@@ -18,23 +18,20 @@ jobs:
         run: |
           pip install s3cmd
       
-      - name: Create .s3cfg file
+      - name: Configure s3cmd
         run: |
-          cat <<EOF > .s3cfg
-          [default]
-          access_key = ${{ secrets.VNG_ACCESS_KEY }}
-          secret_key = ${{ secrets.VNG_SECRET_KEY }}
-          host_base = hcm04.vstorage.vngcloud.vn
-          host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn
-          use_https = True
-          EOF
-
-      - name: List bucket
-        run: s3cmd --config=.s3cfg ls
-
-      - name: Sync to VNG Cloud
+          echo "[default]" > ~/.s3cfg
+          echo "access_key = ${{ secrets.S3_ACCESS_KEY_ID }}" >> ~/.s3cfg
+          echo "secret_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}" >> ~/.s3cfg
+          echo "host_base = hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
+          echo "host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
+          echo "use_https = True" >> ~/.s3cfg
+          # Thêm các tùy chọn cần thiết khác
+          echo "signature_v2 = False" >> ~/.s3cfg  # Nhiều S3-compatible cần v2 signature
+      
+      - name: Test connection
         run: |
-          s3cmd --config=~/.s3cfg sync --delete-removed ./vn/ s3://test-git-action/vn/
+          cat ~/.s3cfg
       
       - name: Call sync KB API
         if: ${{ success() }}
