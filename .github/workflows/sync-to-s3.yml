@@ -1,4 +1,4 @@
-name: Sync Documentation to VNG Cloud Storage
+name: Sync to VNG Cloud with s3cmd
 
 on:
   push:
@@ -13,24 +13,32 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
-      - name: Install AWS CLI
+      
+      - name: Install s3cmd
         run: |
-          pip install awscli
-        
-      - name: Configure AWS CLI
+          pip install s3cmd
+      
+      - name: Configure s3cmd
         run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = ${{ secrets.S3_ACCESS_KEY_ID }}" >> ~/.aws/credentials
-          echo "aws_secret_access_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
-          echo "region = ${{ secrets.S3_REGION || 'ap-southeast-1' }}" >> ~/.aws/credentials
-          
-      - name: Sync vn folder to VNG Cloud Storage
+          echo "[default]" > ~/.s3cfg
+          echo "access_key = ${{ secrets.S3_ACCESS_KEY_ID }}" >> ~/.s3cfg
+          echo "secret_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}" >> ~/.s3cfg
+          echo "host_base = hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
+          echo "host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
+          echo "use_https = True" >> ~/.s3cfg
+          # Thêm các tùy chọn cần thiết khác
+          echo "signature_v2 = False" >> ~/.s3cfg  # Nhiều S3-compatible cần v2 signature
+      
+      - name: Test connection
         run: |
-          aws s3 sync ./vn s3://test-git-action/ --delete --endpoint-url ${{ secrets.S3_ENDPOINT_URL }}
-          
+          s3cmd ls
+      
+      - name: Sync to VNG Cloud
+        run: |
+          s3cmd sync --delete-removed ./vn/ s3://test-git-action/vn/
+      
       - name: Call sync KB API
+        if: ${{ success() }}
         run: |
           curl -X POST http://103.196.239.132:8000/kb/sync-kb \
-            -H "Content-Type: application/json" 
+            -H "Content-Type: application/json" \
