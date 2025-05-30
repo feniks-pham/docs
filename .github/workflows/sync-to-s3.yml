@@ -1,0 +1,31 @@
+name: Sync Documentation to S3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'vn/**'  # Chỉ kích hoạt khi có thay đổi trong thư mục vn
+  workflow_dispatch:  # Cho phép chạy thủ công khi cần
+
+jobs:
+  sync-to-s3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          
+      - name: Sync vn folder to S3
+        run: |
+          aws s3 sync ./vn s3://test-git-action/vn/ --delete
+          
+      - name: Call sync KB API
+        run: |
+          curl -X POST http://103.196.239.132:8000/kb/sync-kb \
+            -H "Content-Type: application/json"
