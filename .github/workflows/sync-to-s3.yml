@@ -23,7 +23,7 @@ jobs:
           
       - name: Sync vn folder to S3
         run: |
-          aws s3 sync ./vn s3://test-git-action/vn/ --delete
+          aws s3 sync ./vn s3://test-git-action/vn/ --delete --endpoint-url ${{ secrets.S3_ENDPOINT_URL }}
           
       - name: Call sync KB API
         run: |
