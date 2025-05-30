@@ -18,26 +18,20 @@ jobs:
         run: |
           pip install s3cmd
       
-      - name: Configure s3cmd
+      - name: Create .s3cfg file
         run: |
-          cat > ~/.s3cfg << EOL
+          cat <<EOF > .s3cfg
           [default]
-          access_key = ${{ secrets.S3_ACCESS_KEY_ID }}
-          secret_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          access_key = ${{ secrets.VNG_ACCESS_KEY }}
+          secret_key = ${{ secrets.VNG_SECRET_KEY }}
           host_base = hcm04.vstorage.vngcloud.vn
           host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn
           use_https = True
-          signature_v2 = False
-          EOL
-          
-          # Kiểm tra file cấu hình
-          ls -la ~/ | grep .s3cfg
-          cat ~/.s3cfg | grep -v secret_key
-      
-      - name: Test connection
-        run: |
-          s3cmd --config=~/.s3cfg ls
-      
+          EOF
+
+      - name: List bucket
+        run: s3cmd --config=.s3cfg ls
+
       - name: Sync to VNG Cloud
         run: |
           s3cmd --config=~/.s3cfg sync --delete-removed ./vn/ s3://test-git-action/vn/
