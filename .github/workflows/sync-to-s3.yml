@@ -23,8 +23,8 @@ jobs:
           echo "[default]" > ~/.s3cfg
           echo "access_key = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.s3cfg
           echo "secret_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.s3cfg
-          echo "host_base = hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
-          echo "host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
+          echo "host_base = ${{ secrets.S3_ENDPOINT_URL }}" >> ~/.s3cfg
+          echo "host_bucket = %(bucket)s.${{ secrets.S3_ENDPOINT_URL }}" >> ~/.s3cfg
           echo "use_https = True" >> ~/.s3cfg
       
       - name: Test connection
@@ -38,5 +38,5 @@ jobs:
       - name: Call sync KB API
         if: ${{ success() }}
         run: |
-          curl -X POST http://103.196.239.132:8000/kb/sync-kb \
+          curl -X POST "${{ secrets.KB_API_URL }}/kb/sync-kb" \
             -H "Content-Type: application/json" \
