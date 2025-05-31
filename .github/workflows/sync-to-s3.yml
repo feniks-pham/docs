@@ -29,8 +29,12 @@ jobs:
       
       - name: Prepare only .md files
         run: |
-          mkdir filtered
-          rsync -av --include='*/' --include='*.md' --exclude='*' Vietnamese/ filtered/
+          mkdir -p filtered
+          rsync -av --prune-empty-dirs \
+            --include='*/' \
+            --include='*.md' \
+            --exclude='*' \
+            Vietnamese/ filtered/
       
       - name: Sync only .md files to VNG Cloud
         run: |
