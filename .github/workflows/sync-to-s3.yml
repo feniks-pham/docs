@@ -25,13 +25,15 @@ jobs:
           echo "secret_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}" >> ~/.s3cfg
           echo "host_base = hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
           echo "host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
-          echo "use_https = True" >> ~/.s3cfg
-          # Thêm các tùy chọn cần thiết khác
-          echo "signature_v2 = False" >> ~/.s3cfg  # Nhiều S3-compatible cần v2 signature
+          echo "use_https = True" >> ~/.s3cf
       
       - name: Test connection
         run: |
-          cat ~/.s3cfg
+          s3cmd ls -c ~/.s3cfg
+      
+      - name: Sync to VNG Cloud
+        run: |
+          s3cmd sync --delete-removed ./vn/ s3://test-git-action/vn/ -c ~/.s3cfg
       
       - name: Call sync KB API
         if: ${{ success() }}
