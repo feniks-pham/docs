@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'vn/**'
+      - 'Vietnamese/**/*.md'
   workflow_dispatch:
 
 jobs:
@@ -27,16 +27,17 @@ jobs:
           echo "host_bucket = %(bucket)s.${{ secrets.S3_ENDPOINT_URL }}" >> ~/.s3cfg
           echo "use_https = True" >> ~/.s3cfg
       
-      - name: Test connection
+      - name: Prepare only .md files
         run: |
-          s3cmd ls -c ~/.s3cfg
+          mkdir filtered
+          rsync -av --include='*/' --include='*.md' --exclude='*' Vietnamese/ filtered/
       
-      - name: Sync to VNG Cloud
+      - name: Sync only .md files to VNG Cloud
         run: |
-          s3cmd sync --delete-removed ./vn/ s3://test-git-action/vn/ -c ~/.s3cfg
+          s3cmd sync --delete-removed ./filtered/ s3://test-git-action/ -c ~/.s3cfg
       
       - name: Call sync KB API
         if: ${{ success() }}
         run: |
-          curl -X POST "${{ secrets.KB_API_URL }}/kb/sync-kb" \
+          curl --max-time 600 -X POST "${{ secrets.KB_API_URL }}/kb/sync-kb" \
             -H "Content-Type: application/json" \
