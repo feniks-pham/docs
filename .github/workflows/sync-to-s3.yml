@@ -29,7 +29,6 @@ jobs:
       
       - name: Test connection
         run: |
-          cat ~/.s3cfg
           s3cmd ls -c ~/.s3cfg
       
       - name: Sync to VNG Cloud
