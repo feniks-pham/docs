@@ -25,7 +25,7 @@ jobs:
           echo "secret_key = ${{ secrets.S3_SECRET_ACCESS_KEY }}" >> ~/.s3cfg
           echo "host_base = hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
           echo "host_bucket = %(bucket)s.hcm04.vstorage.vngcloud.vn" >> ~/.s3cfg
-          echo "use_https = True" >> ~/.s3cf
+          echo "use_https = True" >> ~/.s3cfg
       
       - name: Test connection
         run: |
